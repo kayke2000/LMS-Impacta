@@ -125,3 +125,75 @@ CONSTRAINT fkSoliciMat_IdCoord FOREIGN KEY (IdCoordenador) REFERENCES Coordenado
 CONSTRAINT ckStatus CHECK (Status = 'Solicitada' OR Status = 'Aprovada' OR Status = 'Rejeitada' OR Status = 'Cancelada'),
 );
 
+CREATE TABLE Atividade 
+(
+ID TINYINT IDENTITY, 
+Titulo VARCHAR(30) NOT NULL,
+Descricao VARCHAR(50),
+Conteudo VARCHAR(100) NOT NULL, 
+Tipo VARCHAR(15) NOT NULL, 
+Extras VARCHAR(30),
+IdProfessor TINYINT NOT NULL, 
+
+CONSTRAINT pkAtividade PRIMARY KEY (ID),
+CONSTRAINT uqTitulo UNIQUE (TItulo),
+CONSTRAINT ckTipo CHECK (Tipo = 'Reposta Aberta' OR Tipo= 'Teste'),
+CONSTRAINT fkAtividade_IdProf FOREIGN KEY (IdProfessor) REFERENCES Professor(ID)
+);
+
+
+CREATE TABLE AtividadeVinculada(
+ID TINYINT IDENTITY,
+IdAtividade TINYINT NOT NULL,
+IdProfessor TINYINT NOT NULL,
+IdDisciplinaOfertada TINYINT NOT NULL,
+Rotulo CHAR(4) NOT NULL,
+Status VARCHAR(20) NOT NULL,
+DtInicioResposta DATE NOT NULL,
+DtFimResposta DATE NOT NULL, 
+CONSTRAINT pkAtividadeVinculada PRIMARY KEY(ID),
+CONSTRAINT fkProfessor FOREIGN KEY (IdProfessor) REFERENCES Professor(ID),
+CONSTRAINT fkAtividade FOREIGN KEY (IdAtivida) REFERENCES Atividade(ID),
+CONSTRAINT fkDisciplinaOfertada FOREIGN KEY (IdDisciplinaOfertada) 
+REFERENCES DisciplinaOfertada(ID),
+
+);
+
+
+CREATE TABLE Entrega(
+ID TINYINT IDENTITY,
+IdAluno SMALLINT NOT NULL,
+IdAtividadeVinculada TINYINT NOT NULL,
+Titulo VARCHAR(50) NOT NULL,
+Resposta VARCHAR(50) NOT NULL,
+DtEtrega DATETIME CONSTRAINT dfdtentrega DEFAULT(GETDATE()),
+Status VARCHAR(15)CONSTRAINT dfstatus DEFAULT ('Entregue'),
+IdProfessor TINYINT NULL,
+Nota DECIMAL(2,2) NULL,
+DtAvaliacao DATE NULL,
+Obs VARCHAR(50)NULL
+CONSTRAINT PkEntrega PRIMARY KEY(ID),
+CONSTRAINT fkAluno_Id_entrega FOREIGN KEY(IdAluno) REFERENCES Aluno(ID),
+CONSTRAINT fkAluno_Id_ativVinc FOREIGN KEY( IdAtividadeVinculada) REFERENCES AtividadeVinculada(ID),
+CONSTRAINT chk_status_E CHECK (Status='Entregue' or Status= 'Corrigido'),
+CONSTRAINT fkAluno_Id_professor FOREIGN KEY( IdProfessor ) REFERENCES Professor(ID),
+CONSTRAINT chk_status_E CHECK (Nota>=0.00 and Nota<=10.00),
+
+);
+
+CREATE TABLE Mensagem(
+ID TINYINT IDENTITY,
+IdAluno SMALLINT NOT NULL,
+IdProfessor TINYINT NOT NULL,
+Assunto VARCHAR(50) NOT NULL,
+Referencia VARCHAR(20) NOT NULL,
+Conteudo VARCHAR(50) NOT NULL,
+Status VARCHAR(15) CONSTRAINT dfstatus DEFAULT ('Respondido'),
+DtEnvio DATE CONSTRAINT dfdtenvio DEFAULT(GETDATE()),
+DtResposta DATE NULL,
+Resposta VARCHAR(50) NULL,
+CONSTRAINT PkMensagem PRIMARY KEY(ID),
+CONSTRAINT fkmensagem_Id_aluno FOREIGN KEY(IdAluno) REFERENCES Aluno(ID),
+CONSTRAINT fkmensagem_Id_professor FOREIGN KEY(IdProfessor) REFERENCES Professor(ID),
+CONSTRAINT chk_status CHECK (Status='Enviado' or Status='Lido' or Status='Respondido'),
+);
